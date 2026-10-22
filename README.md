@@ -1,5 +1,7 @@
 # Doctor Tracker
 
+**Live demo:** https://doctor-tracker-frontend-wheat.vercel.app · **API:** https://doctor-tracker-backend-one.vercel.app · **Code:** [frontend](https://github.com/skbantu22/doctor-tracker-frontend) · [backend](https://github.com/skbantu22/doctor-tracker-backend)
+
 Doctor Tracker is a secure admin workspace where clinic administrators manage doctors and their patients and can see how the clinic is changing. Admins sign in to a protected portal and keep a searchable, filterable directory of doctors. They can open any doctor to manage that doctor's patients, maintain the full patient register, and use a dashboard of totals, caseloads and month-by-month trends. The app is a Next.js client talking to a separate Express REST API backed by MongoDB. List views are paginated and indexed on the server, so they stay fast as records grow.
 
 | | |
