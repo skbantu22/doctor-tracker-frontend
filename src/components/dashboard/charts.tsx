@@ -7,8 +7,9 @@ import {
 import type { DashboardData, PatientStatus } from "@/lib/types";
 
 // Single-series charts use the brand accent; the status donut uses validated categorical slots 1–3.
-const ACCENT = "#3f8a66";
-const ACCENT_SOFT = "#7fb39a";
+// Theme tokens from app/themes.css; SVG presentation attributes resolve CSS variables.
+const ACCENT = "var(--chart-accent, #3f8a66)";
+const ACCENT_SOFT = "var(--chart-soft, #7fb39a)";
 export const STATUS_COLORS: Record<PatientStatus, string> = { Active: "#2a78d6", "Follow-up": "#eb6834", Recovered: "#1baf7a" };
 const axisTick = { fill: "#7a867e", fontSize: 11 };
 const tooltipStyle = { border: "1px solid #e6ebe5", borderRadius: 8, fontSize: 12, boxShadow: "0 6px 20px #2c3e3314" };

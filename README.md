@@ -18,6 +18,7 @@ Doctor Tracker is a secure admin workspace where clinic administrators manage do
 - **Patients.** A dedicated register with search, filters for condition, status, doctor and date range, pagination, edit and delete.
 - **Dashboard.** Shows total doctors and total patients, new patients in the selected range, and average caseload. Charts cover new patients per month, doctors added per month, patients per doctor and care-status distribution, plus top conditions and specialties. The date range is selectable (3, 6 or 12 months). Every chart links into the filtered list behind it.
 - **AI insights (optional).** When a free Google Gemini key is configured, the dashboard shows 3 or 4 plain-language insights, such as caseload imbalance, intake trends and status mix. They are generated on the server from aggregate counts only, with no patient-level data, and cached for 10 minutes. A second model is tried if the first is busy. Without a key, the card is simply hidden.
+- **Themes and typography.** Four color themes (Forest, Ocean, Royal, Sunset) driven by CSS design tokens and applied before first paint, with Bricolage Grotesque headings and Plus Jakarta Sans body text.
 - **Signature UX.** A dashboard hero with a time-of-day greeting and quick actions, animated stat cards with sparklines and month-over-month change, a Ctrl/⌘+K command palette that searches doctors and patients from anywhere, smooth page transitions, and a one-click demo sign-in.
 - **UX.** Filters live in the URL, so views can be shared, survive a refresh and work with the back button. Search is debounced. The previous page stays visible while the next one loads, and loading skeletons, empty states, error states with retry, confirmation dialogs and toasts are built in. On phones the sidebar becomes a bottom tab bar and tables become stacked cards.
 
@@ -185,6 +186,14 @@ List counts run in parallel with the page query (`Promise.all`). Patient counts 
 | ![Doctor detail, desktop](public/screenshots/desktop-doctor-detail.png) | ![Patients, mobile](public/screenshots/mobile-patients.png) |
 | ![Patients, desktop](public/screenshots/desktop-patients.png) | ![Login, mobile](public/screenshots/mobile-login.png) |
 | ![Command palette (Ctrl+K), desktop](public/screenshots/desktop-palette.png) | ![Login, desktop](public/screenshots/desktop-login.png) |
+
+**Themes** (switch from the palette icon in the top bar; the choice is remembered per browser):
+
+| Forest | Ocean |
+|---|---|
+| ![Forest theme](public/screenshots/theme-forest.png) | ![Ocean theme](public/screenshots/theme-ocean.png) |
+| **Royal** | **Sunset** |
+| ![Royal theme](public/screenshots/theme-royal.png) | ![Sunset theme](public/screenshots/theme-sunset.png) |
 
 ## Deployment
 

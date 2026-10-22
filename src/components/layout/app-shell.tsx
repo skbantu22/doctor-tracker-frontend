@@ -10,6 +10,7 @@ import { initials } from "@/lib/format";
 import { useSession } from "@/lib/queries";
 import { PageSkeleton } from "../ui/feedback";
 import { CommandPalette } from "./command-palette";
+import { ThemeSwitcher } from "./theme-switcher";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -90,6 +91,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <button className="search-trigger" onClick={() => window.dispatchEvent(new Event("open-command-palette"))} aria-label="Search (Ctrl+K)">
               <Search size={15} /><span>Search…</span><kbd>Ctrl K</kbd>
             </button>
+            <ThemeSwitcher />
             <span className="topbar-divider" />
             <button className="help-button" onClick={signOut} aria-label="Sign out" title="Sign out"><LogOut size={17} /></button>
           </div>
