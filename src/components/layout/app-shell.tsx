@@ -1,7 +1,7 @@
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
-import { CalendarDays, HeartPulse, LayoutDashboard, LogOut, Stethoscope, Users } from "lucide-react";
+import { HeartPulse, LayoutDashboard, LogOut, Search, Stethoscope, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Suspense, type ReactNode } from "react";
@@ -9,6 +9,7 @@ import { api } from "@/lib/api";
 import { initials } from "@/lib/format";
 import { useSession } from "@/lib/queries";
 import { PageSkeleton } from "../ui/feedback";
+import { CommandPalette } from "./command-palette";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -41,8 +42,9 @@ function CurrentSection() {
   return <strong>{useActiveItem()?.label ?? "Workspace"}</strong>;
 }
 
-function Today() {
-  return <>{new Intl.DateTimeFormat("en", { weekday: "short", month: "short", day: "numeric" }).format(new Date())}</>;
+/** Re-keys page content on route change so each page fades in. */
+function PageTransition({ children }: { children: ReactNode }) {
+  return <div key={usePathname()} className="page-transition">{children}</div>;
 }
 
 export function AppShell({ children }: { children: ReactNode }) {
@@ -85,15 +87,18 @@ export function AppShell({ children }: { children: ReactNode }) {
             <Suspense fallback={<strong>Workspace</strong>}><CurrentSection /></Suspense>
           </div>
           <div className="topbar-right">
-            <span className="today-label"><CalendarDays size={15} /> <Suspense><Today /></Suspense></span>
+            <button className="search-trigger" onClick={() => window.dispatchEvent(new Event("open-command-palette"))} aria-label="Search (Ctrl+K)">
+              <Search size={15} /><span>Search…</span><kbd>Ctrl K</kbd>
+            </button>
             <span className="topbar-divider" />
             <button className="help-button" onClick={signOut} aria-label="Sign out" title="Sign out"><LogOut size={17} /></button>
           </div>
         </header>
         <div className="page-content">
-          <Suspense fallback={<PageSkeleton />}>{children}</Suspense>
+          <Suspense fallback={<PageSkeleton />}><PageTransition>{children}</PageTransition></Suspense>
         </div>
       </main>
+      <CommandPalette />
     </div>
   );
 }

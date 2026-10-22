@@ -3,6 +3,7 @@ import { DM_Sans, DM_Serif_Display } from "next/font/google";
 import { Providers } from "@/components/providers";
 import "./globals.css";
 import "./app.css";
+import "./experience.css";
 
 const dmSans = DM_Sans({
   variable: "--font-sans",

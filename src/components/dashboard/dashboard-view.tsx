@@ -1,15 +1,18 @@
 "use client";
 
-import { Activity, ArrowRight, BarChart3, HeartPulse, Plus, Stethoscope, TrendingUp, Users } from "lucide-react";
+import { Activity, ArrowRight, BarChart3, HeartPulse, Stethoscope, TrendingUp, Users } from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useState, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { useUrlFilters } from "@/hooks/use-url-filters";
 import { useDashboard } from "@/lib/queries";
 import { patientStatuses, type NamedCount } from "@/lib/types";
 import { DoctorFormModal } from "../doctors/doctor-form-modal";
-import { ErrorState, PageHeading } from "../ui/feedback";
+import { PatientFormModal } from "../patients/patient-form-modal";
+import { ErrorState } from "../ui/feedback";
+import { DashboardHero } from "./hero";
 import { InsightsCard } from "./insights-card";
+import { StatCard } from "./stat-card";
 
 // Recharts is the heaviest client dependency; load it only on the dashboard, after the shell paints.
 const chartFallback = () => <div className="chart-loading" aria-hidden />;
@@ -27,35 +30,47 @@ export function DashboardView() {
   const months = ranges.find((value) => String(value) === values.months) ?? 6;
   const dashboard = useDashboard(months);
   const [addingDoctor, setAddingDoctor] = useState(false);
+  const [addingPatient, setAddingPatient] = useState(false);
   const data = dashboard.data;
   const loading = dashboard.isLoading;
+  const trends = useMemo(() => {
+    if (!data) return undefined;
+    const patientsMonthly = data.monthly.map((row) => row.patients);
+    const doctorsMonthly = data.monthly.map((row) => row.doctors);
+    // Running totals that end at today's totals, so the sparkline's last point is the headline number.
+    const cumulative = (values: number[], total: number) => {
+      let running = total - values.reduce((sum, value) => sum + value, 0);
+      return values.map((value) => (running += value));
+    };
+    const thisMonth = patientsMonthly.at(-1) ?? 0;
+    const lastMonth = patientsMonthly.at(-2) ?? 0;
+    return {
+      patientsMonthly,
+      patientsCumulative: cumulative(patientsMonthly, data.patientCount),
+      doctorsCumulative: cumulative(doctorsMonthly, data.doctorCount),
+      thisMonth,
+      delta: lastMonth ? Math.round(((thisMonth - lastMonth) / lastMonth) * 100) : null,
+    };
+  }, [data]);
 
   return (
     <>
-      <PageHeading
-        kicker={`CLINIC SUMMARY · ${new Intl.DateTimeFormat("en", { month: "short", day: "numeric", year: "numeric" }).format(new Date()).toUpperCase()}`}
-        title="Dashboard"
-        description="Clinic activity, patient intake and care team workload."
-        action={<button className="button-primary" onClick={() => setAddingDoctor(true)}><Plus size={17} /> Add doctor</button>}
+      <DashboardHero
+        months={months}
+        onMonths={(range) => update({ months: range === 6 ? "" : String(range) })}
+        fetching={dashboard.isFetching}
+        thisMonth={trends?.thisMonth}
+        onAddDoctor={() => setAddingDoctor(true)}
+        onAddPatient={() => setAddingPatient(true)}
       />
-
-      <div className="range-bar" role="group" aria-label="Date range">
-        <span>Showing the last</span>
-        <div className="segmented">
-          {ranges.map((range) => (
-            <button key={range} className={range === months ? "is-active" : ""} aria-pressed={range === months} onClick={() => update({ months: range === 6 ? "" : String(range) })}>{range} months</button>
-          ))}
-        </div>
-        {dashboard.isFetching && !loading && <span className="refreshing">Updating…</span>}
-      </div>
 
       {dashboard.isError ? <ErrorState message={dashboard.error.message} onRetry={() => dashboard.refetch()} /> : (
         <>
-          <section className="metric-grid" aria-label="Clinic summary">
-            <MetricCard label="Total doctors" value={data?.doctorCount} hint="In your directory" icon={<Stethoscope size={18} />} accent="mint" />
-            <MetricCard label="Total patients" value={data?.patientCount} hint="Across all doctors" icon={<Users size={18} />} accent="peach" />
-            <MetricCard label={`New patients · ${months} mo`} value={data?.newPatients} hint="Added in the selected range" icon={<TrendingUp size={18} />} accent="blue" />
-            <MetricCard label="Patients per doctor" value={data?.averagePerDoctor} hint="Average caseload" icon={<Activity size={18} />} accent="mint" />
+          <section className="stat-grid" aria-label="Clinic summary">
+            <StatCard label="Total doctors" value={data?.doctorCount} hint="In your directory" icon={<Stethoscope size={18} />} tone="forest" series={trends?.doctorsCumulative} />
+            <StatCard label="Total patients" value={data?.patientCount} hint="Across all doctors" icon={<Users size={18} />} tone="amber" series={trends?.patientsCumulative} />
+            <StatCard label={`New patients · ${months} mo`} value={data?.newPatients} hint="Monthly intake" icon={<TrendingUp size={18} />} tone="ocean" series={trends?.patientsMonthly} delta={trends?.delta} />
+            <StatCard label="Patients per doctor" value={data?.averagePerDoctor} decimals={1} hint="Average caseload" icon={<Activity size={18} />} tone="plum" />
           </section>
 
           <InsightsCard months={months} enabled={Boolean(data) && !dashboard.isPlaceholderData} />
@@ -105,20 +120,11 @@ export function DashboardView() {
       )}
 
       {addingDoctor && <DoctorFormModal onClose={() => setAddingDoctor(false)} />}
+      {addingPatient && <PatientFormModal onClose={() => setAddingPatient(false)} />}
     </>
   );
 }
 
-function MetricCard({ label, value, hint, icon, accent }: { label: string; value?: number; hint: string; icon: ReactNode; accent: string }) {
-  return (
-    <article className="metric-card">
-      <div className="metric-top"><span className={`metric-icon metric-${accent}`}>{icon}</span></div>
-      <span className="metric-label">{label}</span>
-      <strong className="metric-value">{value === undefined ? <span className="skeleton-text" /> : value.toLocaleString()}</strong>
-      <span className="metric-hint">{hint}</span>
-    </article>
-  );
-}
 
 function ChartPanel({ kicker, title, action, summary, className = "", children }: { kicker: string; title: string; action?: ReactNode; summary?: ReactNode; className?: string; children: ReactNode }) {
   return (
