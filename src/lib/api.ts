@@ -27,7 +27,10 @@ export async function api<T>(path: string, options: ApiOptions = {}): Promise<T>
       // eslint-disable-next-line @next/next/no-location-assign-relative-destination
       window.location.assign(`/login?next=${encodeURIComponent(window.location.pathname)}`);
     }
-    throw new ApiError(payload.error || "Request failed.", response.status, payload.details);
+    const fallback = response.status >= 500
+      ? "The server is unavailable right now. Please try again in a moment."
+      : "Request failed.";
+    throw new ApiError(payload.error || fallback, response.status, payload.details);
   }
   return payload as T;
 }
